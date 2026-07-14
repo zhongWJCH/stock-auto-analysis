@@ -7,11 +7,9 @@ import CandidateHighlights from "./components/CandidateHighlights.vue";
 import MetricsPanel from "./components/MetricsPanel.vue";
 import PriceChartPanel from "./components/PriceChartPanel.vue";
 import ResultsExplorer from "./components/ResultsExplorer.vue";
-import UptrendScreener from "./components/UptrendScreener.vue";
 import {
   loadSnapshotData,
   loadLatestMarketDate,
-  loadManyHistories,
   loadSymbolHistory,
   nextTradingDay,
   predictFromStaticData,
@@ -30,7 +28,6 @@ const hitOnly = ref(true);
 const successOnly = ref(true);
 const latestMarketDate = ref("");
 const nextMarketDate = ref("");
-const activePage = ref("predict");
 
 const form = reactive({
   startDate: "2024-01-01",
@@ -40,16 +37,18 @@ const form = reactive({
 });
 
 const strategyCards = [
-  { key: "meanReversion", label: "超跌反弹" },
-  { key: "momentumBreakout", label: "动量突破" },
-  { key: "compositeScore", label: "综合评分" },
+  { key: "momentumRotation", label: "ETF 动量轮动" },
+  { key: "trendFollowing", label: "趋势跟随" },
+  { key: "volumeBreakout", label: "突破放量" },
+  { key: "oversoldRebound", label: "超跌反弹" },
+  { key: "relativeStrength", label: "相对强弱" },
 ];
 
 const symbolOptions = computed(() =>
   snapshot.value.symbols
-    .filter((item) => item.category !== "benchmark")
+    .filter((item) => item.category === "etf")
     .map((item) => ({
-      label: `${item.symbol} ${item.name} · ${item.category === "stock" ? "上证主板" : "场内ETF"}`,
+      label: `${item.symbol} ${item.name} · 场内ETF`,
       value: item.symbol,
     })),
 );
@@ -70,17 +69,6 @@ const predictionSummary = computed(() => ({
       : (analysis.value?.selections || []).length,
   mode: analysis.value?.forecastOnly ? "前瞻预测" : "历史验证",
 }));
-
-async function loadAllHistories() {
-  const targets = snapshot.value.symbols.filter((item) => item.category !== "benchmark");
-  const histories = await loadManyHistories(targets, 500, 12);
-  const [benchmark] = await loadManyHistories(
-    [{ symbol: "000001", name: "上证指数", category: "benchmark" }],
-    500,
-    1,
-  );
-  return benchmark ? [...histories, benchmark] : histories;
-}
 
 async function loadSnapshot() {
   snapshot.value = await loadSnapshotData();
@@ -156,19 +144,6 @@ onMounted(async () => {
     />
 
     <main class="main-content">
-      <section class="surface">
-        <div class="page-tabs">
-          <el-segmented
-            v-model="activePage"
-            :options="[
-              { label: '交易日预测', value: 'predict' },
-              { label: '上涨策略筛选', value: 'screen' }
-            ]"
-          />
-        </div>
-      </section>
-
-      <template v-if="activePage === 'predict'">
       <section class="surface analysis-panel">
         <div class="panel-header wide">
           <div>
@@ -217,7 +192,7 @@ onMounted(async () => {
             <el-input-number v-model="form.targetGainPct" :min="0.5" :max="20" :step="0.5" class="full-width" />
           </el-form-item>
 
-          <el-form-item label="选择股票与 ETF" class="symbol-select">
+          <el-form-item label="选择场内 ETF" class="symbol-select">
             <el-select
               v-model="form.symbols"
               multiple
@@ -262,21 +237,6 @@ onMounted(async () => {
         @update:hit-only="hitOnly = $event"
         @update:success-only="successOnly = $event"
       />
-      </template>
-
-      <template v-else>
-        <UptrendScreener
-          :snapshot="snapshot"
-          :latest-market-date="latestMarketDate"
-          :load-all-histories="loadAllHistories"
-          :load-symbol-detail="loadSymbolDetail"
-        />
-        <PriceChartPanel
-          :detail="selectedDetail"
-          :analysis-date="latestMarketDate"
-          :prediction-date="nextMarketDate"
-        />
-      </template>
     </main>
   </div>
 </template>

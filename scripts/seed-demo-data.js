@@ -48,19 +48,18 @@ function makeHistory(symbol, name, category, basePrice, volatility) {
 }
 
 const symbols = [
-  { symbol: "600000", name: "浦发银行", category: "stock", latestPrice: 8.33, latestChangePct: 1.22, secid: "1.600000" },
-  { symbol: "600519", name: "贵州茅台", category: "stock", latestPrice: 1450.5, latestChangePct: -0.52, secid: "1.600519" },
-  { symbol: "600036", name: "招商银行", category: "stock", latestPrice: 41.15, latestChangePct: 2.11, secid: "1.600036" },
   { symbol: "510300", name: "沪深300ETF", category: "etf", latestPrice: 3.58, latestChangePct: 0.88, secid: "1.510300" },
   { symbol: "510050", name: "上证50ETF", category: "etf", latestPrice: 2.68, latestChangePct: 0.43, secid: "1.510050" },
-  { symbol: "000001", name: "上证指数代理", category: "index", latestPrice: 3120.12, latestChangePct: 0.61, secid: "1.000001" },
+  { symbol: "000300", name: "沪深300", category: "benchmark", latestPrice: 3600.12, latestChangePct: 0.61, secid: "1.000300" },
+  { symbol: "000985", name: "中证全指", category: "benchmark", latestPrice: 5200.12, latestChangePct: 0.61, secid: "1.000985" },
+  { symbol: "000001", name: "上证指数", category: "benchmark", latestPrice: 3120.12, latestChangePct: 0.61, secid: "1.000001" },
 ];
 
 await ensureWorkspace();
 await saveSymbols(symbols);
 for (const item of symbols) {
-  const base = item.symbol === "600519" ? 1500 : item.symbol === "000001" ? 3000 : item.latestPrice;
-  const vol = item.symbol === "600519" ? 18 : item.category === "etf" ? 0.08 : 0.45;
+  const base = item.latestPrice;
+  const vol = item.category === "etf" ? 0.08 : 0.45;
   await writeHistory(item.symbol, makeHistory(item.symbol, item.name, item.category, base, vol));
 }
 

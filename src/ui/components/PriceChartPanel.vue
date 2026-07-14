@@ -165,7 +165,7 @@ onBeforeUnmount(() => {
     </div>
 
     <div v-if="!detail || !detail.history?.length" class="empty-card">
-      从下方结果表选择一只股票或 ETF，即可查看 K 线图和 KDJ。
+      从下方结果表选择一只场内 ETF，即可查看 K 线图和 KDJ。
     </div>
 
     <template v-else>

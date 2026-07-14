@@ -37,18 +37,18 @@ async function main() {
   });
 
   console.log("metrics", JSON.stringify(forecast.metrics, null, 2));
-  console.log("matched mean", forecast.selections.filter((x) => x.perStrategy.meanReversion.matched).length);
-  console.log("matched momentum", forecast.selections.filter((x) => x.perStrategy.momentumBreakout.matched).length);
-  console.log("matched score", forecast.selections.filter((x) => x.perStrategy.compositeScore.matched).length);
+  console.log("matched rotation", forecast.selections.filter((x) => x.perStrategy.momentumRotation.matched).length);
+  console.log("matched trend", forecast.selections.filter((x) => x.perStrategy.trendFollowing.matched).length);
+  console.log("matched breakout", forecast.selections.filter((x) => x.perStrategy.volumeBreakout.matched).length);
+  console.log("matched rebound", forecast.selections.filter((x) => x.perStrategy.oversoldRebound.matched).length);
+  console.log("matched strength", forecast.selections.filter((x) => x.perStrategy.relativeStrength.matched).length);
   console.log(
     "sample matched",
     JSON.stringify(
       forecast.selections
         .filter(
           (x) =>
-            x.perStrategy.meanReversion.matched
-            || x.perStrategy.momentumBreakout.matched
-            || x.perStrategy.compositeScore.matched,
+            Object.values(x.perStrategy).some((strategy) => strategy.matched),
         )
         .slice(0, 10),
       null,

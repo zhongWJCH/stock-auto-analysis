@@ -59,41 +59,30 @@ export async function syncAllData(options = {}) {
   await ensureWorkspace();
 
   const symbols = await fetchUniverseSymbols();
-  const benchmarkSymbol = {
-    symbol: "000001",
-    secid: "1.000001",
-    name: "上证指数",
-    category: "benchmark",
-    latestPrice: null,
-    latestChangePct: null,
-    turnover: null,
-  };
-  const allSymbols = [...symbols, benchmarkSymbol];
+  const benchmarkSymbols = [
+    { symbol: "000300", secid: "1.000300", name: "沪深300", category: "benchmark" },
+    { symbol: "000985", secid: "1.000985", name: "中证全指", category: "benchmark" },
+    { symbol: "000001", secid: "1.000001", name: "上证指数", category: "benchmark" },
+  ].map((item) => ({ ...item, latestPrice: null, latestChangePct: null, turnover: null }));
+  const allSymbols = [...symbols, ...benchmarkSymbols];
   const macros = await fetchMacroSnapshot();
   const topMovers = computeTopMovers(symbols);
 
   await saveSymbols(allSymbols);
   await saveMarketSnapshot({ macros, topMovers });
 
-  const historyFailures = options.skipHistory ? [] : await syncHistories(symbols, options);
+  const historyFailures = options.skipHistory ? [] : await syncHistories(allSymbols, options);
   let latestMarketDate = null;
   if (!options.skipHistory) {
     try {
-      const history = await fetchBenchmarkHistory({ startDate: options.startDate || appConfig.defaultStartDate });
-      latestMarketDate = history.at(-1)?.date || null;
-      await writeHistory(benchmarkSymbol.symbol, {
-        symbol: benchmarkSymbol.symbol,
-        name: benchmarkSymbol.name,
-        secid: benchmarkSymbol.secid,
-        category: benchmarkSymbol.category,
+      const history = await fetchBenchmarkHistory({
+        secid: "1.000300",
         startDate: options.startDate || appConfig.defaultStartDate,
-        latestDate: history.at(-1)?.date || null,
-        updatedAt: new Date().toISOString(),
-        history,
       });
+      latestMarketDate = history.at(-1)?.date || null;
     } catch (error) {
       historyFailures.push({
-        symbol: benchmarkSymbol.symbol,
+        symbol: "000300",
         message: error instanceof Error ? error.message : "Benchmark sync failed",
       });
     }
@@ -104,7 +93,7 @@ export async function syncAllData(options = {}) {
     latestMarketDate,
     source: "Eastmoney public endpoints",
     sourceNotes: [
-      "Universe includes Shanghai main-board A-shares and ETF boards from Eastmoney.",
+      "Universe includes exchange-traded ETFs plus relative-strength benchmark indices from Eastmoney.",
       "History and snapshot files are written for direct frontend consumption.",
     ],
     historyFailures,

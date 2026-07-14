@@ -33,10 +33,10 @@ async function main() {
   );
 
   const selected = symbols
-    .filter((item) => item.category !== "benchmark" && !failedSymbols.has(item.symbol))
+    .filter((item) => item.category === "etf" && !failedSymbols.has(item.symbol))
     .slice(0, 6);
-  const benchmark = symbols.find((item) => item.symbol === "000001");
-  const targets = benchmark ? [...selected, benchmark] : selected;
+  const benchmarks = symbols.filter((item) => item.category === "benchmark");
+  const targets = [...selected, ...benchmarks];
 
   const histories = await Promise.all(
     targets.map(async (item) => {
