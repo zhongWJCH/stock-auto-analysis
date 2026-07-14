@@ -64,7 +64,7 @@ const predictionSummary = computed(() => ({
   candidateCount:
     analysis.value?.forecastOnly
       ? (analysis.value?.selections || []).filter((item) =>
-          strategyCards.some((strategy) => item.perStrategy[strategy.key]?.matched),
+          Object.values(item.perStrategy).some((strategy) => strategy.nextDayEligible && strategy.matched),
         ).length
       : (analysis.value?.selections || []).length,
   mode: analysis.value?.forecastOnly ? "前瞻预测" : "历史验证",

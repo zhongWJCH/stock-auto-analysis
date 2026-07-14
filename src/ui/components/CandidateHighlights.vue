@@ -14,7 +14,7 @@ const emit = defineEmits(["select"]);
 const rankedCandidates = computed(() => {
   const rows = props.analysis?.selections || [];
   return rows
-    .filter((item) => Object.values(item.perStrategy).some((strategy) => strategy.matched))
+    .filter((item) => Object.values(item.perStrategy).some((strategy) => strategy.nextDayEligible && strategy.matched))
     .map((item) => {
       const labels = {
         momentumRotation: "ETF 动量轮动",
@@ -24,12 +24,14 @@ const rankedCandidates = computed(() => {
         relativeStrength: "相对强弱",
       };
       const matchedStrategies = Object.entries(item.perStrategy)
-        .filter(([, strategy]) => strategy.matched)
+        .filter(([, strategy]) => strategy.nextDayEligible && strategy.matched)
         .map(([key]) => labels[key]);
 
       const rankScore =
         matchedStrategies.length * 10
-        + Math.max(...Object.values(item.perStrategy).map((strategy) => strategy.score || 0));
+        + Math.max(...Object.values(item.perStrategy)
+          .filter((strategy) => strategy.nextDayEligible)
+          .map((strategy) => strategy.score || 0));
 
       return {
         ...item,
@@ -86,7 +88,6 @@ const rankedCandidates = computed(() => {
         </div>
 
         <div class="candidate-notes">
-          <div v-if="item.perStrategy.momentumRotation.matched">动量排名：{{ item.perStrategy.momentumRotation.reasons[3] }}</div>
           <div v-if="item.perStrategy.volumeBreakout.matched">量价突破已命中</div>
           <div v-if="item.perStrategy.relativeStrength.matched">相对基准持续走强</div>
         </div>

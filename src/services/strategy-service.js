@@ -1,11 +1,11 @@
 import { average, calculateRsi, movingAverage, percentChange, toFixedNumber } from "../utils.js";
 
 const STRATEGIES = [
-  { key: "momentumRotation", label: "ETF 动量轮动" },
-  { key: "trendFollowing", label: "趋势跟随" },
-  { key: "volumeBreakout", label: "突破放量" },
-  { key: "oversoldRebound", label: "超跌反弹" },
-  { key: "relativeStrength", label: "相对强弱" },
+  { key: "momentumRotation", label: "ETF 动量轮动", nextDayEligible: false },
+  { key: "trendFollowing", label: "趋势跟随", nextDayEligible: true },
+  { key: "volumeBreakout", label: "突破放量", nextDayEligible: true },
+  { key: "oversoldRebound", label: "超跌反弹", nextDayEligible: true },
+  { key: "relativeStrength", label: "相对强弱", nextDayEligible: true },
 ];
 
 const REFERENCE_SYMBOLS = new Set(["000300", "000985", "000001"]);
@@ -250,7 +250,7 @@ function buildMetrics(selections, forecastOnly) {
   return STRATEGIES.map(({ key, label }) => {
     const triggered = selections.filter((item) => item.perStrategy[key].matched);
     if (forecastOnly) {
-      return { key, label, triggerCount: triggered.length };
+      return { key, label, nextDayEligible: STRATEGIES.find((strategy) => strategy.key === key).nextDayEligible, triggerCount: triggered.length };
     }
 
     const outcomes = triggered.map((item) => item.perStrategy[key].outcome).filter(Boolean);
@@ -274,6 +274,7 @@ function buildMetrics(selections, forecastOnly) {
     return {
       key,
       label,
+      nextDayEligible: STRATEGIES.find((strategy) => strategy.key === key).nextDayEligible,
       triggerCount: triggered.length,
       winRate: outcomes.length ? toFixedNumber((successes / outcomes.length) * 100) : null,
       avgGainPct: gains.length ? toFixedNumber(average(gains)) : null,
@@ -311,7 +312,8 @@ function analyze(inputSeries, options, forecastOnly) {
     };
 
     for (const strategy of STRATEGIES) {
-      perStrategy[strategy.key].outcome = !forecastOnly && perStrategy[strategy.key].matched
+      perStrategy[strategy.key].nextDayEligible = strategy.nextDayEligible;
+      perStrategy[strategy.key].outcome = !forecastOnly && strategy.nextDayEligible && perStrategy[strategy.key].matched
         ? nextDayOutcome(item.series, index, options.targetGainPct)
         : null;
     }

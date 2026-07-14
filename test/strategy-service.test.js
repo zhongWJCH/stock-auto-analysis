@@ -64,8 +64,11 @@ test("only ETFs are evaluated with the five replacement strategies", () => {
   assert.equal(result.referenceName, "沪深300");
   assert.equal(result.metrics.length, 5);
   assert.deepEqual(result.selections.map((item) => item.category), ["etf", "etf"]);
-  assert.equal(result.selections.find((item) => item.symbol === "510300").perStrategy.trendFollowing.matched, true);
+  const broadSelection = result.selections.find((item) => item.symbol === "510300");
+  assert.equal(broadSelection.perStrategy.trendFollowing.matched, true);
   assert.equal(result.selections.find((item) => item.symbol === "512480").perStrategy.volumeBreakout.matched, true);
+  assert.equal(broadSelection.perStrategy.momentumRotation.nextDayEligible, false);
+  assert.equal(broadSelection.perStrategy.momentumRotation.outcome, null);
 });
 
 test("forecast mode returns ETF candidates without historical outcomes", () => {
@@ -76,6 +79,7 @@ test("forecast mode returns ETF candidates without historical outcomes", () => {
   });
 
   assert.equal(result.forecastOnly, true);
+  assert.equal(result.selections[0].perStrategy.momentumRotation.nextDayEligible, false);
   assert.equal(result.selections[0].perStrategy.trendFollowing.outcome, null);
   assert.ok(result.selections.some((item) => Object.values(item.perStrategy).some((strategy) => strategy.matched)));
 });

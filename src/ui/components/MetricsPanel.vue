@@ -25,7 +25,7 @@ defineProps({
     <div class="metric-grid">
       <article v-for="metric in analysis?.metrics || []" :key="metric.key" class="metric-card">
         <div class="metric-top">
-          <span>{{ metric.label }}</span>
+          <span>{{ metric.label }} · {{ metric.nextDayEligible ? "次日候选" : "中期信号" }}</span>
           <el-icon><Histogram /></el-icon>
         </div>
         <strong>{{ metric.triggerCount }}</strong>

@@ -38,7 +38,7 @@ const rows = computed(() => {
   }
   if (props.hitOnly) {
     if (props.strategyFilter === "all") {
-      data = data.filter((item) => props.strategyCards.some((strategy) => item.perStrategy[strategy.key]?.matched));
+      data = data.filter((item) => Object.values(item.perStrategy).some((strategy) => strategy.nextDayEligible && strategy.matched));
     } else {
       data = data.filter((item) => item.perStrategy[props.strategyFilter]?.matched);
     }
@@ -62,6 +62,9 @@ function strategySummary(row, strategyKey) {
   }
   if (!strategy.matched) {
     return "未触发";
+  }
+  if (!strategy.nextDayEligible) {
+    return "触发中期轮动信号，建议按周或月复核调仓";
   }
   const outcome = strategy.outcome;
   if (!outcome) {
