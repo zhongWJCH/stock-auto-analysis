@@ -69,10 +69,6 @@ function mapListRecord(raw, category) {
   };
 }
 
-function isDomesticStockSymbol(symbol) {
-  return /^(?:(?:000|001|002|003|300|301|430|600|601|603|605|688|689)\d{3}|[89]\d{5})$/.test(symbol);
-}
-
 function normalizeMacroPrice(targetKey, rawValue) {
   if (!Number.isFinite(rawValue) || rawValue === 0) {
     return null;
@@ -127,13 +123,7 @@ function parseKline(rawLine) {
 }
 
 export async function fetchUniverseSymbols() {
-  const [stocks, etfs] = await Promise.all([
-    fetchClistAll("m:0+t:6,m:0+t:80,m:0+t:81+s:2048,m:1+t:2,m:1+t:23", "stock", (item) =>
-      isDomesticStockSymbol(item.symbol),
-    ),
-    fetchClistAll("b:MK0021,b:MK0022,b:MK0023,b:MK0024", "etf"),
-  ]);
-  return [...stocks, ...etfs];
+  return fetchClistAll("b:MK0021,b:MK0022,b:MK0023,b:MK0024", "etf");
 }
 
 export async function fetchHistoricalKlines(secid, options = {}) {
@@ -153,7 +143,7 @@ export async function fetchHistoricalKlines(secid, options = {}) {
 }
 
 export async function fetchBenchmarkHistory(options = {}) {
-  return fetchHistoricalKlines("1.000001", options);
+  return fetchHistoricalKlines(options.secid || "1.000001", options);
 }
 
 async function fetchMacroFromStooq(symbol, key, label, name) {

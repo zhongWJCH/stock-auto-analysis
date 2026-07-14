@@ -74,7 +74,7 @@ export async function loadSnapshotData() {
   return {
     symbols: symbols.filter((item) => {
       if (item.category === "benchmark") {
-        return item.symbol === "000001";
+        return ["000001", "000300", "000985"].includes(item.symbol);
       }
       if (failedSymbols.has(item.symbol)) {
         return false;
@@ -164,9 +164,9 @@ export function calculateKdj(history, period = 9, kSmoothing = 3, dSmoothing = 3
 
 export async function runAnalysisFromStaticData({ date, targetGainPct, symbols }) {
   const snapshot = await loadSnapshotData();
-  const selected = snapshot.symbols.filter((item) => symbols.includes(item.symbol));
-  const benchmark = snapshot.symbols.find((item) => item.symbol === "000001");
-  const targets = benchmark ? [...selected, benchmark] : selected;
+  const selected = snapshot.symbols.filter((item) => item.category === "etf" && symbols.includes(item.symbol));
+  const benchmarks = snapshot.symbols.filter((item) => item.category === "benchmark");
+  const targets = [...selected, ...benchmarks];
   const histories = await loadManyHistories(targets, 500, 12);
 
   if (!histories.length) {
@@ -189,9 +189,9 @@ export async function runAnalysisFromStaticData({ date, targetGainPct, symbols }
 
 export async function predictFromStaticData({ date, targetGainPct, symbols }) {
   const snapshot = await loadSnapshotData();
-  const selected = snapshot.symbols.filter((item) => symbols.includes(item.symbol));
-  const benchmark = snapshot.symbols.find((item) => item.symbol === "000001");
-  const targets = benchmark ? [...selected, benchmark] : selected;
+  const selected = snapshot.symbols.filter((item) => item.category === "etf" && symbols.includes(item.symbol));
+  const benchmarks = snapshot.symbols.filter((item) => item.category === "benchmark");
+  const targets = [...selected, ...benchmarks];
   const histories = await loadManyHistories(targets, 500, 12);
 
   if (!histories.length) {

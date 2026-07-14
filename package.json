@@ -9,7 +9,8 @@
     "build": "vite build",
     "preview": "vite preview",
     "sync": "node scripts/sync-data.js",
-    "seed": "node scripts/seed-demo-data.js"
+    "seed": "node scripts/seed-demo-data.js",
+    "test": "node --test test/strategy-service.test.js"
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.2",

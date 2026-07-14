@@ -38,7 +38,7 @@ const rows = computed(() => {
   }
   if (props.hitOnly) {
     if (props.strategyFilter === "all") {
-      data = data.filter((item) => props.strategyCards.some((strategy) => item.perStrategy[strategy.key]?.matched));
+      data = data.filter((item) => Object.values(item.perStrategy).some((strategy) => strategy.nextDayEligible && strategy.matched));
     } else {
       data = data.filter((item) => item.perStrategy[props.strategyFilter]?.matched);
     }
@@ -62,6 +62,9 @@ function strategySummary(row, strategyKey) {
   }
   if (!strategy.matched) {
     return "未触发";
+  }
+  if (!strategy.nextDayEligible) {
+    return "触发中期轮动信号，建议按周或月复核调仓";
   }
   const outcome = strategy.outcome;
   if (!outcome) {
@@ -100,9 +103,11 @@ function handleCurrentChange(row) {
           :model-value="strategyFilter"
           :options="[
             { label: '全部策略', value: 'all' },
-            { label: '超跌反弹', value: 'meanReversion' },
-            { label: '动量突破', value: 'momentumBreakout' },
-            { label: '综合评分', value: 'compositeScore' }
+            { label: '动量轮动', value: 'momentumRotation' },
+            { label: '趋势跟随', value: 'trendFollowing' },
+            { label: '突破放量', value: 'volumeBreakout' },
+            { label: '超跌反弹', value: 'oversoldRebound' },
+            { label: '相对强弱', value: 'relativeStrength' }
           ]"
           @update:model-value="emit('update:strategyFilter', $event)"
         />

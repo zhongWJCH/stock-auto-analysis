@@ -27,9 +27,9 @@ const emit = defineEmits(["update:startDate", "sync", "refresh"]);
   <aside class="sidebar">
     <section class="surface hero-panel">
       <p class="eyebrow">Vite + Vue + Element Plus</p>
-      <h1>股票策略分析台</h1>
+      <h1>场内 ETF 策略分析台</h1>
       <p class="hero-copy">
-        面向上证主板与场内 ETF 的本地研究台。同步历史数据后，按策略预测下一交易日，并核对真实结果。
+        面向场内 ETF 的本地研究台。同步历史数据后，按策略预测下一交易日，并核对真实结果。
       </p>
       <div class="hero-stats">
         <div>
@@ -66,7 +66,7 @@ const emit = defineEmits(["update:startDate", "sync", "refresh"]);
       </el-form>
 
       <el-alert
-        title="默认会同步全部上证主板与场内 ETF，无需再设置同步上限。"
+        title="默认会同步全部场内 ETF 及相对强弱所需的指数基准，无需设置同步上限。"
         type="success"
         :closable="false"
         show-icon

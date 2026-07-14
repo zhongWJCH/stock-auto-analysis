@@ -14,23 +14,24 @@ const emit = defineEmits(["select"]);
 const rankedCandidates = computed(() => {
   const rows = props.analysis?.selections || [];
   return rows
-    .filter(
-      (item) =>
-        item.perStrategy.meanReversion.matched
-        || item.perStrategy.momentumBreakout.matched
-        || item.perStrategy.compositeScore.matched,
-    )
+    .filter((item) => Object.values(item.perStrategy).some((strategy) => strategy.nextDayEligible && strategy.matched))
     .map((item) => {
-      const matchedStrategies = [
-        item.perStrategy.meanReversion.matched ? "超跌反弹" : null,
-        item.perStrategy.momentumBreakout.matched ? "动量突破" : null,
-        item.perStrategy.compositeScore.matched ? "综合评分" : null,
-      ].filter(Boolean);
+      const labels = {
+        momentumRotation: "ETF 动量轮动",
+        trendFollowing: "趋势跟随",
+        volumeBreakout: "突破放量",
+        oversoldRebound: "超跌反弹",
+        relativeStrength: "相对强弱",
+      };
+      const matchedStrategies = Object.entries(item.perStrategy)
+        .filter(([, strategy]) => strategy.nextDayEligible && strategy.matched)
+        .map(([key]) => labels[key]);
 
       const rankScore =
         matchedStrategies.length * 10
-        + (item.perStrategy.compositeScore.score || 0)
-        + (item.perStrategy.momentumBreakout.matched ? 5 : 0);
+        + Math.max(...Object.values(item.perStrategy)
+          .filter((strategy) => strategy.nextDayEligible)
+          .map((strategy) => strategy.score || 0));
 
       return {
         ...item,
@@ -76,7 +77,7 @@ const rankedCandidates = computed(() => {
         </div>
 
         <div class="candidate-meta">
-          <span>{{ item.category === "stock" ? "股票" : "ETF" }}</span>
+          <span>场内 ETF</span>
           <span>{{ formatSigned(item.changePct, "%") }}</span>
         </div>
 
@@ -87,9 +88,8 @@ const rankedCandidates = computed(() => {
         </div>
 
         <div class="candidate-notes">
-          <div v-if="item.perStrategy.compositeScore.matched">综合评分：{{ item.perStrategy.compositeScore.score }}</div>
-          <div v-if="item.perStrategy.momentumBreakout.matched">动量突破已命中</div>
-          <div v-if="item.perStrategy.meanReversion.matched">超跌反弹已命中</div>
+          <div v-if="item.perStrategy.volumeBreakout.matched">量价突破已命中</div>
+          <div v-if="item.perStrategy.relativeStrength.matched">相对基准持续走强</div>
         </div>
       </article>
     </div>
